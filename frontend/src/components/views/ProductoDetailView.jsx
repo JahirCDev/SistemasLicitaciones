@@ -3,7 +3,7 @@ import { productosService, usersService } from "../../services";
 import HistorialViewer from "./HistorialViewer";
 import LoadingSpinner from "../common/LoadingSpinner";
 import ConfirmationModal from "../common/ConfirmationModal";
-import InlineEditCell from "../forms/InlineEditCell";
+import InlineEditCell from "../common/InlineEditCell";
 import "../../styles/views/DetailView.css";
 
 export default function ProductoDetailView({ productoId, onClose }) {
