@@ -1,0 +1,18 @@
+.detail-page {
+  min-height: 100vh;
+  background: linear-gradient(
+    135deg,
+    var(--csc-blue-dark) 0%,
+    var(--csc-green-dark) 100%
+  );
+  padding: 20px;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+}
+
+@media (max-width: 768px) {
+  .detail-page {
+    padding: 12px;
+  }
+}
