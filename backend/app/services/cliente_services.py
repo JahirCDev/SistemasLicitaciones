@@ -1,7 +1,7 @@
-from datetime import datetime
 from fastapi import HTTPException
 from app.models.db import get_db
 from app.schemas.cliente_schema import ClienteCreate, ClienteUpdate
+from app.core.time import now_local_iso
 
 from app.utils.audit_utils import (
   registrar_cambio,
@@ -100,20 +100,20 @@ def actualizar_cliente(
 
         datos_update[campo] = nuevo_valor
 
-      if not datos_update:
-        return cliente_actual
+    if not datos_update:
+      return cliente_actual
 
-      datos_update["updated_at"] = datetime.utcnow().isoformat()
-      datos_update["updated_by"] = user_id
+    datos_update["updated_at"] = now_local_iso()
+    datos_update["updated_by"] = user_id
 
-      response = (
-        db.table("clientes")
-        .update(datos_update)
-        .eq("id", cliente_id)
-        .execute()
-      )
+    response = (
+      db.table("clientes")
+      .update(datos_update)
+      .eq("id", cliente_id)
+      .execute()
+    )
 
-      return response.data[0]
+    return response.data[0]
 
   except HTTPException:
     raise

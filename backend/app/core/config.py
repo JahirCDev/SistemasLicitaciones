@@ -1,6 +1,6 @@
 from pydantic_settings import BaseSettings
 from functools import lru_cache
-from typing import Literal
+from typing import Literal, Optional
 
 class Settings(BaseSettings):
     """
@@ -10,11 +10,16 @@ class Settings(BaseSettings):
 
     supabase_url: str
     supabase_key: str
+    supabase_service_role_key: Optional[str] = None
     supabase_jwks_url: str
 
     jwt_secret: str
     jwt_algorithm: str = "HS256"
     jwt_expiration_days: int = 7
+
+    mailgun_api_key: Optional[str] = None
+    mailgun_domain: Optional[str] = None
+    mailgun_from_email: Optional[str] = None
     
     # database_url: str = ""
 

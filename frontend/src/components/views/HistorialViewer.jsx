@@ -1,10 +1,13 @@
 import "../../styles/views/HistorialViewer.css";
+import { formatLocalDateTime } from "../../utils/dateUtils";
 
 export default function HistorialViewer({
   historial,
   usuarios = [],
   loading,
   error,
+  fieldLabels = {},
+  formatValue = (_campo, valor) => valor,
 }) {
   const obtenerNombreUsuario = (usuarioId) => {
     const usuario = usuarios.find((u) => Number(u.id) === Number(usuarioId));
@@ -42,15 +45,12 @@ export default function HistorialViewer({
                 <div className="historial-main">
                   <span className="historial-dot" aria-hidden="true" />
                   <span className="historial-campo">
-                    {item.campo_modificado}
+                    {fieldLabels[item.campo_modificado] ||
+                      item.campo_modificado}
                   </span>
                 </div>
                 <span className="historial-fecha">
-                  {new Date(item.created_at).toLocaleDateString()}{" "}
-                  {new Date(item.created_at).toLocaleTimeString([], {
-                    hour: "2-digit",
-                    minute: "2-digit",
-                  })}
+                  {formatLocalDateTime(item.created_at)}
                 </span>
               </div>
 
@@ -64,11 +64,14 @@ export default function HistorialViewer({
               <div className="historial-values">
                 <div className="value-change">
                   <span className="old-value">
-                    {item.valor_anterior || "-"}
+                    {formatValue(item.campo_modificado, item.valor_anterior) ||
+                      "-"}
                   </span>
                 </div>
                 <div className="value-change">
-                  <span className="new-value">{item.valor_nuevo}</span>
+                  <span className="new-value">
+                    {formatValue(item.campo_modificado, item.valor_nuevo)}
+                  </span>
                 </div>
               </div>
             </div>

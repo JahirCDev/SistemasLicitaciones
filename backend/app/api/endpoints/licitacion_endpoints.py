@@ -1,5 +1,13 @@
+import re
+import unicodedata
+
 from fastapi import APIRouter, Depends, HTTPException, Query, UploadFile
-from app.schemas.licitacion_schema import LicitacionCreate, LicitacionResponse
+from app.schemas.licitacion_schema import (
+    ActualizarCantidadProductoRequest,
+    LicitacionCreate,
+    LicitacionResponse,
+    LicitacionUpdate,
+)
 from app.services.licitacion_services import LicitacionService
 from app.core.security import verify_token
 
@@ -23,6 +31,18 @@ async def obtener_licitacion(
 ):
     return LicitacionService.obtener_licitacion(licitacion_id)
 
+@router.put("/{licitacion_id}", response_model=LicitacionResponse)
+async def actualizar_licitacion(
+    licitacion_id: int,
+    licitacion_update: LicitacionUpdate,
+    user_id: int = Depends(verify_token)
+):
+    return LicitacionService.actualizar_licitacion(
+        licitacion_id,
+        licitacion_update,
+        user_id,
+    )
+
 @router.get("/{licitacion_id}/detalle")
 async def obtener_detalle_licitacion(
     licitacion_id: int,
@@ -44,7 +64,12 @@ async def agregar_producto(
     cantidad: int = Query(..., gt=0),
     user_id: int = Depends(verify_token)
 ):
-    LicitacionService.agregar_producto(licitacion_id, producto_id, cantidad)
+    LicitacionService.agregar_producto(
+        licitacion_id,
+        producto_id,
+        cantidad,
+        user_id,
+    )
     return {"message": "Producto agregado exitosamente"}
 
 @router.delete("/{licitacion_id}/productos/{producto_id}")
@@ -53,7 +78,25 @@ async def remover_producto(
     producto_id: int,
     user_id: int = Depends(verify_token)
 ):
-    return LicitacionService.remover_producto(licitacion_id, producto_id)
+    return LicitacionService.remover_producto(
+        licitacion_id,
+        producto_id,
+        user_id,
+    )
+
+@router.put("/{licitacion_id}/productos/{producto_id}")
+async def actualizar_cantidad_producto(
+    licitacion_id: int,
+    producto_id: int,
+    cantidad_update: ActualizarCantidadProductoRequest,
+    user_id: int = Depends(verify_token)
+):
+    return LicitacionService.actualizar_cantidad_producto(
+        licitacion_id,
+        producto_id,
+        cantidad_update.cantidad,
+        user_id,
+    )
 
 @router.post("/{licitacion_id}/documento")
 async def subir_documento(
@@ -66,14 +109,51 @@ async def subir_documento(
     db = get_db()
     try:
         content = await file.read()
-        file_path = f"licitaciones/{licitacion_id}/{file.filename}"
-        db.storage.from_("propuestas").upload(file_path, content)
+        nombre_archivo = unicodedata.normalize(
+            "NFKD",
+            file.filename or "documento",
+        ).encode("ascii", "ignore").decode("ascii")
+        nombre_archivo = re.sub(r"[^A-Za-z0-9._-]+", "_", nombre_archivo)
+        nombre_archivo = nombre_archivo.strip("._") or "documento"
+        file_path = f"licitaciones/{licitacion_id}/{nombre_archivo}"
+        db.storage.from_("propuestas").upload(
+            file_path,
+            content,
+            file_options={
+                "content-type": file.content_type or "application/octet-stream",
+                "upsert": "true",
+            },
+        )
         url = db.storage.from_("propuestas").get_public_url(file_path)
         
-        LicitacionService.subir_documento(licitacion_id, file_path, url)
+        LicitacionService.subir_documento(
+            licitacion_id,
+            file_path,
+            url,
+            user_id,
+            content,
+            nombre_archivo,
+            file.content_type or "application/octet-stream",
+        )
         return {"message": "Documento subido", "url": url}
+    except HTTPException:
+        raise
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
+
+@router.delete("/{licitacion_id}/documento")
+async def eliminar_documento(
+    licitacion_id: int,
+    user_id: int = Depends(verify_token),
+):
+    return LicitacionService.eliminar_documento(licitacion_id, user_id)
+
+@router.post("/{licitacion_id}/reenviar-correo")
+async def reenviar_correo(
+    licitacion_id: int,
+    user_id: int = Depends(verify_token),
+):
+    return LicitacionService.reenviar_correo(licitacion_id, user_id)
 
 @router.post("/{licitacion_id}/enviar")
 async def enviar_licitacion(

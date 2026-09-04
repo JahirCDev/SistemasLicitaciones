@@ -5,6 +5,7 @@ import NewClientModal from "../forms/NewClienteModal";
 import DataViewContainer from "../common/DataViewContainer";
 import LoadingSpinner from "../common/LoadingSpinner";
 import "../../styles/views/ClientesView.css";
+import { formatLocalDate } from "../../utils/dateUtils";
 
 export default function ClientesView() {
   const navigate = useNavigate();
@@ -60,9 +61,7 @@ export default function ClientesView() {
                   <td>{cliente.apellido || ""}</td>
                   <td className="email-cell">{cliente.email}</td>
                   <td className="date-cell">
-                    {cliente.updated_at
-                      ? new Date(cliente.updated_at).toLocaleDateString()
-                      : new Date(cliente.created_at).toLocaleDateString()}
+                    {formatLocalDate(cliente.updated_at || cliente.created_at)}
                   </td>
                   <td>
                     <button

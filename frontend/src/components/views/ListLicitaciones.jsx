@@ -5,6 +5,7 @@ import { useClientes } from "../../hooks/useClientes";
 import DataViewContainer from "../common/DataViewContainer";
 import LoadingSpinner from "../common/LoadingSpinner";
 import "../../styles/views/ListLicitaciones.css";
+import { formatLocalDate } from "../../utils/dateUtils";
 
 export default function ListarLicitaciones({ refreshTrigger, onNewBidding }) {
   const navigate = useNavigate();
@@ -139,7 +140,7 @@ export default function ListarLicitaciones({ refreshTrigger, onNewBidding }) {
                 </td>
                 <td>${lic.presupuesto_maximo.toFixed(2)}</td>
                 <td>{new Date(lic.fecha_limite).toLocaleDateString()}</td>
-                <td>{new Date(lic.created_at).toLocaleDateString()}</td>
+                <td>{formatLocalDate(lic.created_at)}</td>
                 <td className="actions-cell">
                   <button
                     className="action-btn action-btn-primary"

@@ -17,7 +17,11 @@
 }
 
 .expiring-badge {
-  background: linear-gradient(135deg, var(--csc-green-light) 0%, var(--csc-green-medium) 100%);
+  background: linear-gradient(
+    135deg,
+    var(--csc-green-light) 0%,
+    var(--csc-green-medium) 100%
+  );
   color: white;
   padding: 4px 12px;
   border-radius: 20px;
@@ -58,7 +62,11 @@
 
 .card-header {
   padding: 16px;
-  background: linear-gradient(135deg, var(--csc-blue-dark) 0%, var(--csc-green-dark) 100%);
+  background: linear-gradient(
+    135deg,
+    var(--csc-blue-dark) 0%,
+    var(--csc-green-dark) 100%
+  );
   color: white;
   display: flex;
   justify-content: space-between;
@@ -69,6 +77,7 @@
   margin: 0;
   font-size: 16px;
   font-weight: 600;
+  color: white;
 }
 
 .urgency-badge {
@@ -118,7 +127,11 @@
 
 .progress-fill {
   height: 100%;
-  background: linear-gradient(90deg, var(--csc-green-light), var(--csc-green-medium));
+  background: linear-gradient(
+    90deg,
+    var(--csc-green-light),
+    var(--csc-green-medium)
+  );
   width: 40%;
 }
 
