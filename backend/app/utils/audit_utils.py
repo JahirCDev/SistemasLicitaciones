@@ -1,5 +1,5 @@
-from datetime import datetime
 from app.models.db import get_db
+from app.core.time import now_local_iso
 
 def registrar_cambio(
     tabla: str,
@@ -41,7 +41,7 @@ def registrar_cambio(
             "campo_modificado": campo,
             "valor_anterior": str(valor_anterior) if valor_anterior is not None else None,
             "valor_nuevo": str(valor_nuevo),
-            "created_at": datetime.utcnow().isoformat()
+            "created_at": now_local_iso()
         }).execute()
     except Exception as e:
         print(f"Error registrando cambio en {tabla_historial}: {e}")

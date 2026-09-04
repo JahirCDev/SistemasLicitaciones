@@ -1,0 +1,26 @@
+:root {
+  /* Paleta CSC */
+  --csc-green-light: #A4C639;
+  --csc-green-medium: #7CB342;
+  --csc-green-dark: #558B2F;
+  --csc-blue-dark: #1e3a8a;
+  --csc-blue-medium: #3b82f6;
+  --csc-blue-light: #e0e7ff;
+  
+  /* Neutrales */
+  --gray-900: #111827;
+  --gray-800: #1f2937;
+  --gray-700: #374151;
+  --gray-600: #4b5563;
+  --gray-500: #6b7280;
+  --gray-400: #9ca3af;
+  --gray-300: #d1d5db;
+  --gray-200: #e5e7eb;
+  --gray-100: #f3f4f6;
+  --gray-50: #f9fafb;
+  
+  /* Estados */
+  --error: #dc2626;
+  --success: #16a34a;
+  --warning: #ea580c;
+}

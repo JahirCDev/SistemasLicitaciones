@@ -1,6 +1,10 @@
 import { useState, useEffect } from "react";
 import DatePicker from "react-datepicker";
-import { clientesService, productosService, licitacionesService} from "../../services";
+import {
+  clientesService,
+  productosService,
+  licitacionesService,
+} from "../../services/index";
 import apiClient from "../../api/client";
 import "react-datepicker/dist/react-datepicker.css";
 import "../../styles/pages/NewLicitacionPage.css";
@@ -69,7 +73,7 @@ export default function NewBiddingPage({ onSuccess }) {
 
   const actualizarCantidad = (index, cantidad) => {
     const nuevos = [...productosSeleccionados];
-    nuevos[index].cantidad = Math.max(1, parseInt(cantidad) || 1);
+    nuevos[index].cantidad = Math.max(0, parseInt(cantidad, 10) || 0);
     setProductosSeleccionados(nuevos);
   };
 
@@ -101,6 +105,11 @@ export default function NewBiddingPage({ onSuccess }) {
       return;
     }
 
+    if (productosSeleccionados.some((producto) => producto.cantidad < 1)) {
+      setError("La cantidad de cada producto debe ser mayor que cero");
+      return;
+    }
+
     if (excedePrespuesto()) {
       setError("El total de los productos excede el presupuesto máximo");
       return;
@@ -127,7 +136,6 @@ export default function NewBiddingPage({ onSuccess }) {
         await licitacionesService.subirDocumento(licitacionId, documentoFile);
       }
 
-      await licitacionesService.enviar(licitacionId);
       onSuccess();
     } catch (err) {
       setError(err.response?.data?.detail || "Error al crear la licitación");
@@ -322,6 +330,9 @@ export default function NewBiddingPage({ onSuccess }) {
               !formData.presupuesto_maximo ||
               !formData.fecha_limite ||
               productosSeleccionados.length === 0 ||
+              productosSeleccionados.some(
+                (producto) => producto.cantidad < 1
+              ) ||
               excedePrespuesto()
             }
           >

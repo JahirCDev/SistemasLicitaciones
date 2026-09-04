@@ -45,7 +45,11 @@
 }
 
 .step.active {
-  background: linear-gradient(135deg, var(--csc-green-light) 0%, var(--csc-green-medium) 100%);
+  background: linear-gradient(
+    135deg,
+    var(--csc-green-light) 0%,
+    var(--csc-green-medium) 100%
+  );
   transform: scale(1.1);
 }
 
@@ -259,11 +263,31 @@
 
 .quantity-input input {
   width: 50px;
-  padding: 6px;
+  padding: 8px 10px;
   border: 1px solid var(--gray-300);
-  border-radius: 4px;
+  border-radius: 6px;
   text-align: center;
-  font-size: 12px;
+  font-size: 13px;
+  font-family: inherit;
+  color: var(--gray-900);
+  background: white;
+  transition: all 0.2s ease;
+}
+
+.quantity-input input:focus {
+  outline: none;
+  border-color: var(--csc-green-light);
+  box-shadow: 0 0 0 2px rgba(164, 198, 57, 0.1);
+}
+
+.quantity-input input::-webkit-outer-spin-button,
+.quantity-input input::-webkit-inner-spin-button {
+  margin: 0;
+  -webkit-appearance: none;
+}
+
+.quantity-input input[type="number"] {
+  -moz-appearance: textfield;
 }
 
 .product-price {
@@ -442,7 +466,11 @@
 }
 
 .btn-primary {
-  background: linear-gradient(135deg, var(--csc-green-light) 0%, var(--csc-green-medium) 100%);
+  background: linear-gradient(
+    135deg,
+    var(--csc-green-light) 0%,
+    var(--csc-green-medium) 100%
+  );
   color: white;
 }
 
@@ -525,7 +553,6 @@
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
 }
 
-
 /* ---------------------------------------------------------
    ENCABEZADOS
    --------------------------------------------------------- */
@@ -539,7 +566,6 @@
 
   border-bottom: none;
 }
-
 
 .react-datepicker__current-month {
   color: white;
@@ -580,7 +606,7 @@
   width: 8px;
   height: 8px;
   border-color: white;
-  border-style: solid ;
+  border-style: solid;
   border-width: 2px 2px 0 0;
   transform-origin: center;
 }
@@ -593,8 +619,7 @@
   transform: translate(-100%, -50%) rotate(45deg);
 }
 
-.react-datepicker__navigation:hover
-  .react-datepicker__navigation-icon::before {
+.react-datepicker__navigation:hover .react-datepicker__navigation-icon::before {
   border-color: white;
 }
 
@@ -609,7 +634,7 @@
 }
 
 .react-datepicker__time-list-item:hover {
-  background-color: var(--gray-50) ;
+  background-color: var(--gray-50);
 }
 
 .react-datepicker__time-list-item--selected {

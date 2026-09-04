@@ -4,6 +4,7 @@ import HistorialViewer from "./HistorialViewer";
 import LoadingSpinner from "../common/LoadingSpinner";
 import ConfirmationModal from "../common/ConfirmationModal";
 import InlineEditCell from "../common/InlineEditCell";
+import { formatLocalDateTime } from "../../utils/dateUtils";
 import "../../styles/views/DetailView.css";
 
 export default function ProductoDetailView({ productoId, onClose }) {
@@ -95,7 +96,8 @@ export default function ProductoDetailView({ productoId, onClose }) {
       }));
 
       try {
-        const resHistorial = await productosService.obtenerHistorial(productoId);
+        const resHistorial =
+          await productosService.obtenerHistorial(productoId);
 
         setHistorial(Array.isArray(resHistorial.data) ? resHistorial.data : []);
       } catch (errHist) {
@@ -136,10 +138,7 @@ export default function ProductoDetailView({ productoId, onClose }) {
         <div className="detail-container">
           {/* INFORMACIÓN PRINCIPAL */}
           <section className="detail-section">
-            <h3>Información General</h3>
-            <div className="detail-edit-hint">
-              <span>Doble click sobre un campo para editarlo</span>
-            </div>
+            <h3>Información General (Editable)</h3>
             <div className="detail-fields">
               <div className="detail-field">
                 <label>Nombre</label>
@@ -168,11 +167,7 @@ export default function ProductoDetailView({ productoId, onClose }) {
               <div className="audit-field">
                 <span className="label">Creado:</span>
                 <span className="value">
-                  {new Date(producto.created_at).toLocaleDateString()}{" "}
-                  {new Date(producto.created_at).toLocaleTimeString([], {
-                    hour: "2-digit",
-                    minute: "2-digit",
-                  })}
+                  {formatLocalDateTime(producto.created_at)}
                 </span>
               </div>
               <div className="audit-field">
@@ -185,11 +180,7 @@ export default function ProductoDetailView({ productoId, onClose }) {
                 <div className="audit-field">
                   <span className="label">Última modificación:</span>
                   <span className="value">
-                    {new Date(producto.updated_at).toLocaleDateString()}{" "}
-                    {new Date(producto.updated_at).toLocaleTimeString([], {
-                      hour: "2-digit",
-                      minute: "2-digit",
-                    })}
+                    {formatLocalDateTime(producto.updated_at)}
                   </span>
                 </div>
               )}

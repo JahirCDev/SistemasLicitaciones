@@ -5,6 +5,8 @@ export const licitacionesService = {
 
   obtener: (id) => apiClient.get(`/licitaciones/${id}`),
 
+  actualizar: (id, data) => apiClient.put(`/licitaciones/${id}`, data),
+
   obtenerDetalle: (id) => apiClient.get(`/licitaciones/${id}/detalle`),
 
   crear: (data) => apiClient.post("/licitaciones", data),
@@ -17,6 +19,9 @@ export const licitacionesService = {
   removerProducto: (licId, prodId) =>
     apiClient.delete(`/licitaciones/${licId}/productos/${prodId}`),
 
+  actualizarCantidadProducto: (licId, prodId, cantidad) =>
+    apiClient.put(`/licitaciones/${licId}/productos/${prodId}`, { cantidad }),
+
   subirDocumento: (licId, file) => {
     const formData = new FormData();
     formData.append("file", file);
@@ -24,6 +29,13 @@ export const licitacionesService = {
       headers: { "Content-Type": "multipart/form-data" },
     });
   },
+
+  eliminarDocumento: (licId) => {
+    return apiClient.delete(`/licitaciones/${licId}/documento`);
+  },
+
+  reenviarCorreo: (licId) =>
+    apiClient.post(`/licitaciones/${licId}/reenviar-correo`),
 
   enviar: (licId) => apiClient.post(`/licitaciones/${licId}/enviar`),
 

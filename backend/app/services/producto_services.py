@@ -1,8 +1,8 @@
-from datetime import datetime, timezone
 from fastapi import HTTPException
 
 from app.models.db import get_db
 from app.schemas.producto_schema import ProductoCreate, ProductoUpdate
+from app.core.time import now_local_iso
 from app.utils.audit_utils import (
     registrar_cambio,
     obtener_historial,
@@ -112,9 +112,7 @@ def actualizar_producto(
             return producto_actual
 
         # Información de auditoría
-        datos_update["updated_at"] = datetime.now(
-            timezone.utc
-        ).isoformat()
+        datos_update["updated_at"] = now_local_iso()
 
         datos_update["updated_by"] = user_id
 

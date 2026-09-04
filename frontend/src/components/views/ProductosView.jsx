@@ -1,10 +1,11 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { useProductos } from "../../hooks/useProductos"
-import NewProductModal from "../forms/NewProductoModal"
+import { useProductos } from "../../hooks/useProductos";
+import NewProductModal from "../forms/NewProductoModal";
 import DataViewContainer from "../common/DataViewContainer";
 import LoadingSpinner from "../common/LoadingSpinner";
 import "../../styles/views/ProductosView.css";
+import { formatLocalDate } from "../../utils/dateUtils";
 
 export default function ProductosView() {
   const navigate = useNavigate();
@@ -55,9 +56,9 @@ export default function ProductosView() {
                   <td>{producto.nombre}</td>
                   <td className="price-cell"> {producto.precio}</td>
                   <td className="date-cell">
-                    {producto.updated_at
-                      ? new Date(producto.updated_at).toLocaleDateString()
-                      : new Date(producto.created_at).toLocaleDateString()}
+                    {formatLocalDate(
+                      producto.updated_at || producto.created_at
+                    )}
                   </td>
                   <td>
                     <button
