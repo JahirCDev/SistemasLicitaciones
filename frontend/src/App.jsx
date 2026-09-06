@@ -7,24 +7,29 @@ import ListBiddings from "./components/views/ListLicitaciones";
 import NewBiddingPage from "./components/forms/NewLicitacionPage";
 import ClientsView from "./components/views/ClientesView";
 import ProductsView from "./components/views/ProductosView";
+import UsuariosView from "./components/views/UsuariosView";
 import { useAuthStore } from "./store/authStore";
 import { usersService } from "./services/usersService";
 import "./styles/Colors.css";
 import "./App.css";
 
 function App() {
+  const [refreshTrigger] = useState(0);
   const token = useAuthStore((state) => state.token);
   const userId = useAuthStore((state) => state.userId);
   const logout = useAuthStore((state) => state.logout);
+  const usuario = useAuthStore((state) => state.usuario);
   const [searchParams, setSearchParams] = useSearchParams();
+  console.log("Usuario en App:", usuario); // ← AGREGA ESTO 
   const [activeTab, setActiveTab] = useState(() => {
-    const tabParam = searchParams.get("tab");
-    if (tabParam) return tabParam;
-    return localStorage.getItem("activeTab") || "licitaciones";
+  const tabParam = searchParams.get("tab");
+  if (tabParam) return tabParam;
+  return localStorage.getItem("activeTab") || "licitaciones";
   });
   const [refreshLicitaciones, setRefreshLicitaciones] = useState(false);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [usuarioActual, setUsuarioActual] = useState(null);
+
 
   useEffect(() => {
     localStorage.setItem("activeTab", activeTab);
@@ -54,7 +59,7 @@ function App() {
   const nombreUsuario = usuarioActual
     ? `${usuarioActual.nombre} ${usuarioActual.apellido}`
     : "Usuario";
-    
+
   return (
     <div>
       <Sidebar
@@ -62,6 +67,7 @@ function App() {
         onTabChange={setActiveTab}
         collapsed={sidebarCollapsed}
         onToggle={() => setSidebarCollapsed((prev) => !prev)}
+        usuario={usuario}
       />
 
       <main
@@ -107,6 +113,10 @@ function App() {
             {activeTab === "clientes" && <ClientsView />}
 
             {activeTab === "productos" && <ProductsView />}
+
+            {activeTab === "usuarios" && usuario?.rol === "admin" && (
+              <UsuariosView refreshTrigger={refreshTrigger} />
+            )}
           </div>
         </div>
       </main>

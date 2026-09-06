@@ -1,6 +1,7 @@
 import logging
 from fastapi import HTTPException
 from app.models.db import get_db
+from app.core.security import verify_password, create_access_token
 
 from app.schemas.usuario_schema import UsuarioCreate
 from app.core.security import (
@@ -56,37 +57,55 @@ def listar_usuarios():
 
 def login(email: str, password: str):
     db = get_db()
+    try:
+        print(f"Buscando usuario con email: {email}")
+        usuario = db.table("usuarios").select("*").eq("email", email).execute()
+        print(f"Usuario encontrado: {usuario.data}")
+        
+        if not usuario.data:
+            raise HTTPException(status_code=404, detail="Usuario no encontrado")
+        
+        usuario_data = usuario.data[0]
+        print(f"Datos del usuario: {usuario_data}")
+        
+        print(f"Verificando contraseña...")
+        if not verify_password(password, usuario_data["password_hash"]):
+            raise HTTPException(status_code=401, detail="Contraseña incorrecta")
+        
+        print(f"Contraseña correcta, generando token...")
+        access_token = create_access_token({"sub": str(usuario_data["id"])})
+        
+        response = {
+            "access_token": access_token,
+            "token_type": "bearer",
+            "user_id": usuario_data["id"],
+            "email": usuario_data["email"],
+            "nombre": usuario_data.get("nombre"),
+            "apellido": usuario_data.get("apellido"),
+            "rol": usuario_data.get("rol"),
+        }
+        print(f"Response a retornar: {response}")
+        return response
+    except HTTPException:
+        raise
+    except Exception as e:
+        print(f"Error en login: {str(e)}")
+        raise HTTPException(status_code=400, detail=str(e))
 
-    response = (
-        db.table("usuarios")
-        .select("*")
-        .eq("email", email)
-        .execute()
-    )
-
-    if not response.data:
-        raise HTTPException(
-            status_code=401,
-            detail="Credenciales inválidas"
+def obtener_perfil(user_id: int):
+    """Obtiene el perfil del usuario autenticado"""
+    db = get_db()
+    try:
+        usuario = (
+            db.table("usuarios")
+            .select("*")
+            .eq("id", user_id)
+            .execute()
         )
-
-    usuario = response.data[0]
-
-    if not verify_password(
-        password,
-        usuario["password_hash"]
-    ):
-        raise HTTPException(
-            status_code=401,
-            detail="Credenciales inválidas"
-        )
-
-    token = create_access_token({
-        "sub": usuario["id"]
-    })
-
-    return {
-        "access_token": token,
-        "token_type": "bearer",
-        "user_id": usuario["id"],
-    }
+        if not usuario.data:
+            raise HTTPException(status_code=404, detail="Usuario no encontrado")
+        return usuario.data[0]
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))

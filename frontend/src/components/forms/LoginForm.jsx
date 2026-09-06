@@ -10,6 +10,7 @@ export default function LoginForm() {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const login = useAuthStore((state) => state.login);
+    const setUsuario = useAuthStore((state) => state.setUsuario);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -19,6 +20,13 @@ export default function LoginForm() {
     try {
       const response = await usersService.login(email, password);
       login(response.data.access_token, response.data.user_id);
+      setUsuario({
+         id: response.data.user_id,
+         email: response.data.email,
+         nombre: response.data.nombre,
+         apellido: response.data.apellido,
+         rol: response.data.rol,
+       });
       setEmail("");
       setPassword("");
     } catch (err) {

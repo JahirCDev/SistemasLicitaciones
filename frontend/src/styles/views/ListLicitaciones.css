@@ -134,6 +134,7 @@
 
 .action-btn-primary {
   background: #1e3a8a;
+  width: 120px;
   color: white;
 }
 
@@ -144,7 +145,7 @@
 .action-btn-secondary {
   background: #7CB342;
   color: white;
-  width: 120px;
+  width: 140px;
 }
 
 .action-btn-secondary:hover {

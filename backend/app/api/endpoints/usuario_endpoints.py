@@ -1,4 +1,4 @@
-from fastapi import APIRouter
+from fastapi import APIRouter, Depends
 
 from app.schemas.usuario_schema import (
     UsuarioCreate,
@@ -10,8 +10,10 @@ from app.services.usuario_services import (
     crear_usuario,
     listar_usuarios,
     login,
+    obtener_perfil,
 )
 
+from app.core.security import verify_token
 
 router = APIRouter(
     prefix="/usuarios",
@@ -31,9 +33,15 @@ async def listar_usuarios_endpoint():
     return listar_usuarios()
 
 
-@router.post("/login", response_model=TokenResponse)
+@router.post("/login")
 async def login_endpoint(
     email: str,
-    password: str
+    password: str,
 ):
     return login(email, password)
+
+@router.get("/me", response_model=UsuarioResponse)
+async def obtener_perfil_endpoint(
+    user_id: int = Depends(verify_token)
+):
+    return obtener_perfil(user_id)

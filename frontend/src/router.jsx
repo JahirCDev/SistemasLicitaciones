@@ -3,6 +3,7 @@ import App from "./App";
 import ClienteDetailPage from "./pages/ClienteDetailPage";
 import ProductoDetailPage from "./pages/ProductoDetailPage";
 import LicitacionDetailPage from "./pages/LicitacionDetailPage";
+import UsuarioDetailPage from "./pages/UsuarioDetailPage";
 
 export const router = createBrowserRouter([
   {
@@ -20,5 +21,10 @@ export const router = createBrowserRouter([
   {
     path: "/licitaciones/:id",
     element: <LicitacionDetailPage />,
+  },
+
+  {
+    path: "/usuarios/:id",
+    element: <UsuarioDetailPage />,
   },
 ]);

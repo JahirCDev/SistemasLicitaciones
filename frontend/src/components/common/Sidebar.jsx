@@ -5,11 +5,15 @@ export default function Sidebar({
   onTabChange,
   collapsed,
   onToggle,
+  usuario
 }) {
   const menuItems = [
     { id: "licitaciones", label: "Licitaciones", icon: "📋" },
     { id: "clientes", label: "Clientes", icon: "👥" },
     { id: "productos", label: "Productos", icon: "📦" },
+    ...(usuario?.rol === "admin" 
+      ? [{ id: "usuarios", label: "Usuarios", icon: "👤" }]
+      : []),
   ];
 
   return (
@@ -42,7 +46,6 @@ export default function Sidebar({
           </button>
         ))}
       </nav>
-
       <div className="sidebar-footer">
         {!collapsed && <p>Sistema de Gestión de Licitaciones</p>}
       </div>

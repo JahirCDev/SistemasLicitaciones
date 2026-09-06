@@ -19,3 +19,4 @@ class TokenResponse(BaseModel):
     access_token: str
     token_type: str
     user_id: int
+    rol: Optional[str] = None
