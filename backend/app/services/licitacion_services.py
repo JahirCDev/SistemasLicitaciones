@@ -1,5 +1,3 @@
-from datetime import datetime
-
 from fastapi import HTTPException
 from app.models.db import get_db
 from app.schemas.licitacion_schema import LicitacionCreate, LicitacionUpdate
@@ -608,6 +606,14 @@ class LicitacionService:
                 "estado_anterior": "borrador",
                 "estado_nuevo": "activa"
             }).execute()
+            registrar_cambio(
+                "licitaciones",
+                licitacion_id,
+                user_id,
+                "Estado",
+                "borrador",
+                "activa",
+            )
             
             return {"message": "Licitación enviada", "estado": "activa"}
         except HTTPException:
@@ -639,6 +645,14 @@ class LicitacionService:
                 "estado_anterior": licitacion["estado"],
                 "estado_nuevo": nuevo_estado
             }).execute()
+            registrar_cambio(
+                "licitaciones",
+                licitacion_id,
+                user_id,
+                "Estado",
+                licitacion["estado"],
+                nuevo_estado,
+            )
             
             return {"message": f"Licitación marcada como {nuevo_estado}", "estado": nuevo_estado}
         except HTTPException:
@@ -673,7 +687,8 @@ class LicitacionService:
             # Registrar pago
             db.table("pagos").insert({
                 "licitacion_id": licitacion_id,
-                "monto": monto
+                "monto": monto,
+                "usuario_id": user_id
             }).execute()
             
             nuevo_saldo = saldo_pendiente - monto
@@ -687,6 +702,14 @@ class LicitacionService:
                     "estado_anterior": "por_cobrar",
                     "estado_nuevo": "cobrada"
                 }).execute()
+                registrar_cambio(
+                    "licitaciones",
+                    licitacion_id,
+                    user_id,
+                    "Estado",
+                    "por_cobrar",
+                    "cobrada",
+                )
                 return {"message": "Pago registrado y licitación cobrada", "estado": "cobrada", "saldo": 0}
             
             return {"message": "Pago registrado", "saldo_pendiente": nuevo_saldo}
