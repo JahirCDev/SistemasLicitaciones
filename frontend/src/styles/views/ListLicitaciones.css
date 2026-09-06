@@ -144,10 +144,21 @@
 .action-btn-secondary {
   background: #7CB342;
   color: white;
+  width: 120px;
 }
 
 .action-btn-secondary:hover {
   background: #9BC959;
+}
+
+.action-btn-secondary-lost {
+  background: #DC2626;
+  color: white;
+  width: 120px;
+}
+
+.action-btn-secondary-lost:hover {
+  background: #d05c5c;
 }
 
 /* ==================== RESPONSIVE ==================== */

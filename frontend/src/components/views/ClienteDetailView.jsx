@@ -4,6 +4,7 @@ import HistorialViewer from "./HistorialViewer";
 import LoadingSpinner from "../common/LoadingSpinner";
 import ConfirmationModal from "../common/ConfirmationModal";
 import InlineEditCell from "../common/InlineEditCell";
+import { formatLocalDateTime } from "../../utils/dateUtils";
 import "../../styles/views/DetailView.css";
 
 export default function ClienteDetailView({ clienteId, onClose }) {
@@ -43,7 +44,8 @@ export default function ClienteDetailView({ clienteId, onClose }) {
         setUsuarios(resUsuarios.data || []);
 
         try {
-          const resHistorial = await clientesService.obtenerHistorial(clienteId);
+          const resHistorial =
+            await clientesService.obtenerHistorial(clienteId);
 
           setHistorial(
             Array.isArray(resHistorial.data) ? resHistorial.data : []
@@ -153,7 +155,7 @@ export default function ClienteDetailView({ clienteId, onClose }) {
 
         <div className="detail-container">
           <section className="detail-section">
-            <h3>Información General</h3>
+            <h3>Información General (Editable)</h3>
             <div className="detail-fields">
               <div className="detail-field">
                 <label>Nombre</label>
@@ -195,14 +197,7 @@ export default function ClienteDetailView({ clienteId, onClose }) {
                 <span className="label">Creado:</span>
 
                 <span className="value">
-                  {cliente.created_at
-                    ? new Date(cliente.created_at).toLocaleDateString() +
-                      " " +
-                      new Date(cliente.created_at).toLocaleTimeString([], {
-                        hour: "2-digit",
-                        minute: "2-digit",
-                      })
-                    : "N/A"}
+                  {formatLocalDateTime(cliente.created_at)}
                 </span>
               </div>
 
@@ -219,11 +214,7 @@ export default function ClienteDetailView({ clienteId, onClose }) {
                   <span className="label">Última modificación:</span>
 
                   <span className="value">
-                    {new Date(cliente.updated_at).toLocaleDateString()}{" "}
-                    {new Date(cliente.updated_at).toLocaleTimeString([], {
-                      hour: "2-digit",
-                      minute: "2-digit",
-                    })}
+                    {formatLocalDateTime(cliente.updated_at)}
                   </span>
                 </div>
               )}

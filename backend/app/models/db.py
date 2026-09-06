@@ -5,7 +5,7 @@ from supabase import Client, create_client
 settings = get_settings()
 
 url = settings.supabase_url
-key = settings.supabase_key
+key = settings.supabase_service_role_key or settings.supabase_key
 jwks = settings.supabase_jwks_url 
 
 if not url or not key:

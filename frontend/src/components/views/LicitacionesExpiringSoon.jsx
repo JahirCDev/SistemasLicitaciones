@@ -1,4 +1,6 @@
 import { useLicitaciones } from "../../hooks/useLicitaciones";
+import { useClientes } from "../../hooks/useClientes";
+import { useNavigate } from "react-router-dom";
 import LoadingSpinner from "../common/LoadingSpinner";
 import "../../styles/views/LicitacionesExpiringSoon.css";
 
@@ -8,6 +10,17 @@ export default function BiddingsExpiringSoon({ refreshTrigger }) {
     loading,
     error,
   } = useLicitaciones(refreshTrigger);
+  const { clientes } = useClientes(refreshTrigger);
+  const navigate = useNavigate();
+
+  const obtenerNombreCliente = (clienteId) => {
+    const cliente = clientes.find(
+      (item) => Number(item.id) === Number(clienteId)
+    );
+    return cliente
+      ? `${cliente.nombre || ""} ${cliente.apellido || ""}`.trim()
+      : `Cliente #${clienteId}`;
+  };
 
   const licitaciones = todasLicitaciones
     .filter((lic) => {
@@ -55,13 +68,14 @@ export default function BiddingsExpiringSoon({ refreshTrigger }) {
             <div key={lic.id} className="expiring-card">
               <div className="card-header">
                 <h3>Licitación #{lic.id}</h3>
-                <span className="urgency-badge">Urgente</span>
               </div>
 
               <div className="card-content">
                 <div className="info-row">
                   <span className="label">Cliente:</span>
-                  <span className="value">ID {lic.cliente_id}</span>
+                  <span className="value">
+                    {obtenerNombreCliente(lic.cliente_id)}
+                  </span>
                 </div>
 
                 <div className="info-row">
@@ -84,7 +98,12 @@ export default function BiddingsExpiringSoon({ refreshTrigger }) {
               </div>
 
               <div className="card-footer">
-                <button className="action-btn">Ver Detalles</button>
+                <button
+                  className="action-btn"
+                  onClick={() => navigate(`/licitaciones/${lic.id}`)}
+                >
+                  Ver Detalles
+                </button>
               </div>
             </div>
           ))}
