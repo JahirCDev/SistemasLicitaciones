@@ -1,76 +1,30 @@
-"""
-Módulo de seguridad: Hash, JWT y verificación de tokens.
-"""
-
-from argon2 import PasswordHasher
+from passlib.context import CryptContext
 from datetime import datetime, timedelta
 from jose import JWTError, jwt
-from fastapi import Depends, HTTPException, Header
-import logging
+from fastapi import HTTPException, Header
 from typing import Optional
-
+import logging
 from app.core.config import get_settings
 
-# Configurar logging
-logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger(__name__)
+logger = logging
 
-# Instancia de Argon2 para hash de contraseñas
-ph = PasswordHasher()
-
-
-# ============ FUNCIONES DE HASH ============
+pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 def hash_password(password: str) -> str:
-    """
-    Hashea una contraseña usando Argon2.
-    
-    Args:
-        password: Contraseña en texto plano
-        
-    Returns:
-        Hash seguro de la contraseña
-    """
-    return ph.hash(password)
-
+    return pwd_context.hash(password)
 
 def verify_password(plain_password: str, hashed_password: str) -> bool:
-    """
-    Verifica una contraseña contra su hash.
-    
-    Args:
-        plain_password: Contraseña en texto plano
-        hashed_password: Hash almacenado en la BD
-        
-    Returns:
-        True si coinciden, False si no
-    """
     try:
-        ph.verify(hashed_password, plain_password)
+        pwd_context.verify(hashed_password, plain_password)
         return True
     except Exception:
         return False
-
-
-# ============ FUNCIONES DE JWT ============
 
 def create_access_token(
     data: dict,
     expires_delta: Optional[timedelta] = None
 ) -> str:
-    """
-    Crea un JWT con los datos proporcionados.
-    
-    Args:
-        data: Diccionario con los datos del token (ej: {"sub": user_id})
-        expires_delta: Duración del token. Si no se proporciona, usa el default.
-        
-    Returns:
-        Token JWT codificado
-        
-    Example:
-        token = create_access_token({"sub": 1})
-    """
+
     settings = get_settings()
     to_encode = data.copy()
 
@@ -78,7 +32,6 @@ def create_access_token(
     if "sub" in to_encode:
         to_encode["sub"] = str(to_encode["sub"])
 
-    # Calcular expiración
     if expires_delta:
         expire = datetime.utcnow() + expires_delta
     else:
@@ -98,24 +51,6 @@ def create_access_token(
 
 
 def verify_token(authorization: str = Header(None)) -> int:
-    """
-    Verifica un JWT y retorna el user_id.
-    
-    Uso en endpoints:
-        @router.get("/clientes")
-        async def listar_clientes(user_id: int = Depends(verify_token)):
-            # user_id es garantizado válido
-            ...
-    
-    Args:
-        authorization: Header 'Authorization' (ej: "Bearer <token>")
-        
-    Returns:
-        user_id del token
-        
-    Raises:
-        HTTPException 401: Si el token es inválido o no existe
-    """
     settings = get_settings()
 
     # Validar que existe el header
