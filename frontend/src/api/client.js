@@ -9,13 +9,19 @@ export const apiClient = axios.create({
   },
 });
 
-// Interceptor para agregar token si existe
-apiClient.interceptors.request.use((config) => {
-  const token = localStorage.getItem("token");
-  if (token) {
-    config.headers.Authorization = `Bearer ${token}`;
+// Interceptor para agregar token
+apiClient.interceptors.request.use(
+  (config) => {
+    const token = localStorage.getItem("token");
+    console.log("Token enviado:", token);
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
+    }
+    return config;
+  },
+  (error) => {
+    return Promise.reject(error);
   }
-  return config;
-});
+);
 
 export default apiClient;

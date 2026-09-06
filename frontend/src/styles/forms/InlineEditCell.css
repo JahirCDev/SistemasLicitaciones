@@ -1,0 +1,83 @@
+.inline-edit-display {
+  display: inline-block;
+  min-height: 24px;
+  width: 250px;
+  padding: 4px 7px;
+  border: 1px solid transparent;
+  border-radius: 5px;
+  transition: all 0.2s ease;
+}
+
+.inline-edit-display.editable {
+  cursor: pointer;
+}
+
+/* Indica que el campo puede editarse */
+.inline-edit-display.editable:hover {
+  background: #f1f8e9;
+  border-color: #c5dba0;
+  box-shadow: 0 0 0 2px rgba(164, 198, 57, 0.08);
+}
+
+/* Texto auxiliar visual */
+.inline-edit-display.editable:hover::after {
+  content: "  ✎";
+  font-size: 11px;
+  color: #7cb342;
+}
+
+/* Contenedor mientras se está editando */
+.inline-edit-container {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  width: 100%;
+}
+
+/* Input */
+.inline-edit-input {
+  flex: 1;
+  min-width: 0;
+  padding: 6px 8px;
+  border: 1px solid #a4c639;
+  border-radius: 5px;
+  outline: none;
+  font-size: 14px;
+  color: #333;
+  background: white;
+  box-shadow: 0 0 0 2px rgba(164, 198, 57, 0.12);
+}
+
+.inline-edit-input:focus {
+  border-color: #7cb342;
+}
+
+/* Botones */
+.inline-edit-btn-save,
+.inline-edit-btn-cancel {
+  width: 28px;
+  height: 28px;
+  border-radius: 5px;
+  border: none;
+  cursor: pointer;
+  font-weight: 700;
+  transition: all 0.2s ease;
+}
+
+.inline-edit-btn-save {
+  background: #7cb342;
+  color: white;
+}
+
+.inline-edit-btn-save:hover {
+  background: #689f38;
+}
+
+.inline-edit-btn-cancel {
+  background: #eee;
+  color: #666;
+}
+
+.inline-edit-btn-cancel:hover {
+  background: #ddd;
+}
