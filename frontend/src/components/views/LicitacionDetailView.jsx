@@ -1,10 +1,5 @@
 import { useState, useEffect, useRef } from "react";
-import {
-  licitacionesService,
-  productosService,
-  clientesService,
-  usersService,
-} from "../../services/index";
+import { licitacionesService, productosService, clientesService, usersService } from "../../services/index";
 import HistorialViewer from "./HistorialViewer";
 import ConfirmationModal from "../common/ConfirmationModal";
 import LoadingSpinner from "../common/LoadingSpinner";
@@ -19,6 +14,7 @@ export default function LicitacionDetailView({ licitacionId, onClose }) {
   const [clientes, setClientes] = useState([]);
   const [usuarios, setUsuarios] = useState([]);
   const [historial, setHistorial] = useState([]);
+  const [pagos, setPagos] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
@@ -32,9 +28,11 @@ export default function LicitacionDetailView({ licitacionId, onClose }) {
   const [editingProductQuantity, setEditingProductQuantity] = useState(1);
   const [isSaving, setIsSaving] = useState(false);
   const [isUploadingDocument, setIsUploadingDocument] = useState(false);
+  const [showPaymentModal, setShowPaymentModal] = useState(false);
+  const [paymentAmount, setPaymentAmount] = useState("");
   const documentInputRef = useRef(null);
 
-  // Helper: Obtener nombre del usuario
+  // ============ HELPERS ============
   const obtenerNombreUsuario = (usuarioId) => {
     const usuario = usuarios.find((u) => Number(u.id) === Number(usuarioId));
     if (!usuario) {
@@ -45,14 +43,12 @@ export default function LicitacionDetailView({ licitacionId, onClose }) {
     return nombreCompleto || usuario.email || `Usuario #${usuario.id}`;
   };
 
-  // Helper: Obtener nombre del cliente
   const obtenerNombreCliente = (clienteId) => {
     const cliente = clientes.find((c) => Number(c.id) === Number(clienteId));
     if (!cliente) return `Cliente #${clienteId}`;
     return `${cliente.nombre} ${cliente.apellido}`.trim();
   };
 
-  // Helper: Obtener nombre del producto
   const obtenerNombreProducto = (productoId) => {
     const producto = productosDisponibles.find(
       (p) => Number(p.id) === Number(productoId)
@@ -68,6 +64,28 @@ export default function LicitacionDetailView({ licitacionId, onClose }) {
     return new Date(date.getTime() - offset).toISOString().slice(0, 16);
   };
 
+  const obtenerNombreDocumento = (url) => {
+    try {
+      const nombre = new URL(url).pathname.split("/").pop();
+      return decodeURIComponent(nombre) || "Documento";
+    } catch {
+      return "Documento";
+    }
+  };
+
+  const getEstadoBadge = (estado) => {
+    const badges = {
+      borrador: "badge-gray",
+      activa: "badge-blue",
+      finalizada: "badge-green",
+      por_cobrar: "badge-yellow",
+      cobrada: "badge-success",
+      perdida: "badge-red",
+    };
+    return badges[estado] || "badge-gray";
+  };
+
+  // ============ EFFECT - CARGAR DATOS ============
   useEffect(() => {
     const cargarDatos = async () => {
       try {
@@ -93,11 +111,13 @@ export default function LicitacionDetailView({ licitacionId, onClose }) {
         setUsuarios(resUsuarios.data);
 
         try {
-          const resProds =
+          const resDetalle =
             await licitacionesService.obtenerDetalle(licitacionId);
-          setProductos(resProds.data.productos || []);
+          setProductos(resDetalle.data.productos || []);
+          setPagos(resDetalle.data.pagos || []);
         } catch {
           setProductos([]);
+          setPagos([]);
         }
       } catch (err) {
         console.error("Error cargando licitación:", err);
@@ -110,6 +130,7 @@ export default function LicitacionDetailView({ licitacionId, onClose }) {
     cargarDatos();
   }, [licitacionId]);
 
+  // ============ FUNCIONES DE EDICIÓN ============
   const handleEditField = (field) => {
     setEditingField(field);
     setEditValues({
@@ -169,19 +190,21 @@ export default function LicitacionDetailView({ licitacionId, onClose }) {
 
   const recargarDatos = async () => {
     try {
-      const [resLicitacion, resHistorial, resProds] = await Promise.all([
+      const [resLicitacion, resHistorial, resDetalle] = await Promise.all([
         licitacionesService.obtener(licitacionId),
         licitacionesService.obtenerHistorial(licitacionId),
         licitacionesService.obtenerDetalle(licitacionId),
       ]);
       setLicitacion(resLicitacion.data);
       setHistorial(resHistorial.data);
-      setProductos(resProds.data.productos || []);
+      setProductos(resDetalle.data.productos || []);
+      setPagos(resDetalle.data.pagos || []);
     } catch (err) {
       setError(err.response?.data?.detail || "Error recargando datos");
     }
   };
 
+  // ============ FUNCIONES DE PRODUCTOS ============
   const handleAgregarProducto = async () => {
     if (!selectedProduct || cantidadSeleccionada < 1 || excedePresupuesto)
       return;
@@ -269,6 +292,7 @@ export default function LicitacionDetailView({ licitacionId, onClose }) {
     }
   };
 
+  // ============ FUNCIONES DE DOCUMENTO ============
   const handleSubirDocumento = async (e) => {
     const file = e.target.files[0];
     if (!file) return;
@@ -281,6 +305,12 @@ export default function LicitacionDetailView({ licitacionId, onClose }) {
       setError(err.response?.data?.detail || "Error al subir documento");
     } finally {
       setIsUploadingDocument(false);
+    }
+  };
+
+  const descargarDocumento = () => {
+    if (licitacion?.documento_url) {
+      window.open(licitacion.documento_url, "_blank");
     }
   };
 
@@ -298,21 +328,59 @@ export default function LicitacionDetailView({ licitacionId, onClose }) {
     }
   };
 
-  const descargarDocumento = () => {
-    if (licitacion?.documento_url) {
-      window.open(licitacion.documento_url, "_blank");
-    }
-  };
-
-  const obtenerNombreDocumento = (url) => {
+  // ============ FUNCIONES DE ESTADO ============
+  const cambiarEstado = async (accion, mensaje) => {
+    setIsSaving(true);
     try {
-      const nombre = new URL(url).pathname.split("/").pop();
-      return decodeURIComponent(nombre) || "Documento";
-    } catch {
-      return "Documento";
+      await licitacionesService[accion](licitacionId);
+      setSuccessMessage(mensaje);
+      await recargarDatos();
+    } catch (err) {
+      setSuccessMessage("");
+      setError(err.response?.data?.detail || "Error al actualizar el estado");
+    } finally {
+      setIsSaving(false);
     }
   };
 
+  // ============ FUNCIONES DE PAGO ============
+  const handleRegistrarPago = async () => {
+    const monto = parseFloat(paymentAmount);
+    if (!monto || monto <= 0) {
+      setError("Ingresa un monto válido");
+      return;
+    }
+
+    setConfirmModal({
+      title: "Registrar pago",
+      message: `¿Registrar pago de $${monto.toFixed(2)}?`,
+      onConfirm: async () => {
+        await registrarPago(monto);
+        setConfirmModal(null);
+      },
+      onCancel: () => setConfirmModal(null),
+    });
+  };
+
+  const registrarPago = async (monto) => {
+    setIsSaving(true);
+    try {
+      await licitacionesService.registrarPago(licitacionId, monto);
+      setSuccessMessage(
+        `Pago de $${monto.toFixed(2)} registrado correctamente`
+      );
+      setPaymentAmount("");
+      setShowPaymentModal(false);
+      await recargarDatos();
+    } catch (err) {
+      setSuccessMessage("");
+      setError(err.response?.data?.detail || "Error al registrar pago");
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  // ============ CARGAS Y VARIABLES COMPUTADAS ============
   if (loading) return <LoadingSpinner message="Cargando licitación..." />;
 
   if (!licitacion) {
@@ -326,18 +394,6 @@ export default function LicitacionDetailView({ licitacionId, onClose }) {
     );
   }
 
-  const getEstadoBadge = (estado) => {
-    const badges = {
-      borrador: "badge-gray",
-      activa: "badge-blue",
-      finalizada: "badge-green",
-      por_cobrar: "badge-yellow",
-      cobrada: "badge-success",
-      perdida: "badge-red",
-    };
-    return badges[estado] || "badge-gray";
-  };
-
   const isEditable = ["borrador", "activa"].includes(licitacion.estado);
   const isDraftEditable = licitacion.estado === "borrador";
   const isProductEditable = ["borrador", "activa"].includes(licitacion.estado);
@@ -345,6 +401,8 @@ export default function LicitacionDetailView({ licitacionId, onClose }) {
     (sum, p) => sum + p.cantidad * p.precio,
     0
   );
+  const totalPagado = pagos.reduce((sum, p) => sum + p.monto, 0);
+  const saldoPendiente = totalProductos - totalPagado;
   const productoSeleccionado = productosDisponibles.find(
     (producto) => Number(producto.id) === Number(selectedProduct)
   );
@@ -372,6 +430,7 @@ export default function LicitacionDetailView({ licitacionId, onClose }) {
       )
   );
 
+  // ============ RENDER ============
   return (
     <div className="detail-view">
       <div className="detail-header">
@@ -379,30 +438,103 @@ export default function LicitacionDetailView({ licitacionId, onClose }) {
           Volver
         </button>
         <h2>Detalle de Licitación #{licitacion.id}</h2>
-        {licitacion.estado === "activa" && licitacion.documento_url && (
+        {licitacion.estado === "activa" && (
           <div className="detail-header-actions">
+            {licitacion.documento_url && (
+              <button
+                onClick={() =>
+                  setConfirmModal({
+                    title: "Reenviar correo",
+                    message: "¿Deseas reenviar la licitación al cliente?",
+                    onConfirm: async () => {
+                      await reenviarCorreo();
+                      setConfirmModal(null);
+                    },
+                    onCancel: () => setConfirmModal(null),
+                  })
+                }
+                className="btn-email"
+                disabled={isSaving}
+              >
+                Reenviar correo
+              </button>
+            )}
             <button
+              type="button"
+              className="btn-status-finalize"
               onClick={() =>
                 setConfirmModal({
-                  title: "Reenviar correo",
-                  message: "¿Deseas reenviar la licitación al cliente?",
+                  title: "Marcar como finalizada",
+                  message: "¿Deseas marcar esta licitación como finalizada?",
                   onConfirm: async () => {
-                    await reenviarCorreo();
+                    await cambiarEstado(
+                      "marcarFinalizada",
+                      "Licitación marcada como finalizada."
+                    );
                     setConfirmModal(null);
                   },
                   onCancel: () => setConfirmModal(null),
                 })
               }
-              className="btn-email"
               disabled={isSaving}
             >
-              Reenviar correo
-            </button>
-            <button type="button" className="btn-status-decorative" disabled>
               Marcar Finalizada
             </button>
-            <button type="button" className="btn-status-decorative" disabled>
+            <button
+              type="button"
+              className="btn-status-lost"
+              onClick={() =>
+                setConfirmModal({
+                  title: "Marcar como perdida",
+                  message: "¿Deseas cerrar esta licitación como perdida?",
+                  onConfirm: async () => {
+                    await cambiarEstado(
+                      "marcarPerdida",
+                      "Licitación marcada como perdida."
+                    );
+                    setConfirmModal(null);
+                  },
+                  onCancel: () => setConfirmModal(null),
+                })
+              }
+              disabled={isSaving}
+            >
               Marcar Perdida
+            </button>
+          </div>
+        )}
+        {licitacion.estado === "finalizada" && (
+          <button
+            type="button"
+            className="btn-status-finalize"
+            onClick={() =>
+              setConfirmModal({
+                title: "Facturar licitación",
+                message: "¿Deseas enviar esta licitación a facturación?",
+                onConfirm: async () => {
+                  await cambiarEstado(
+                    "marcarPorCobrar",
+                    "Licitación enviada a facturación."
+                  );
+                  setConfirmModal(null);
+                },
+                onCancel: () => setConfirmModal(null),
+              })
+            }
+            disabled={isSaving}
+          >
+            Facturar
+          </button>
+        )}
+        {licitacion.estado === "por_cobrar" && (
+          <div className="detail-header-actions">
+            <button
+              type="button"
+              className="btn-status-payment"
+              onClick={() => setShowPaymentModal(true)}
+              disabled={isSaving}
+            >
+              Registrar Pago
             </button>
           </div>
         )}
@@ -566,7 +698,7 @@ export default function LicitacionDetailView({ licitacionId, onClose }) {
           </div>
         </section>
 
-        {/* PRODUCTOS - CON ESTILO DATA-VIEW-CONTAINER */}
+        {/* PRODUCTOS */}
         <section className="detail-section products-section">
           <div className="products-header">
             <div className="products-title">
@@ -788,6 +920,59 @@ export default function LicitacionDetailView({ licitacionId, onClose }) {
           )}
         </section>
 
+        {/* PAGOS */}
+        {licitacion.estado === "por_cobrar" && (
+          <section className="detail-section payments-section">
+            <div className="payments-header">
+              <div className="payments-title">
+                <h3>Resumen de Pagos</h3>
+              </div>
+            </div>
+
+            <div className="payment-summary">
+              <div className="payment-item">
+                <span className="payment-label">Total Facturado:</span>
+                <span className="payment-value">
+                  ${totalProductos.toFixed(2)}
+                </span>
+              </div>
+              <div className="payment-item">
+                <span className="payment-label">Total Pagado:</span>
+                <span className="payment-value paid">
+                  ${totalPagado.toFixed(2)}
+                </span>
+              </div>
+              <div className="payment-item highlight">
+                <span className="payment-label">Saldo Pendiente:</span>
+                <span className="payment-value">
+                  ${saldoPendiente.toFixed(2)}
+                </span>
+              </div>
+            </div>
+
+          </section>
+        )}
+        {pagos.length > 0 && (
+          <div className="payments-history">
+              <h4>Historial de Pagos</h4>
+            <div className="payments-list">
+              {pagos.map((pago, idx) => (
+                <div key={idx} className="payment-record">
+                  <div className="payment-date">
+                    {new Date(pago.created_at).toLocaleDateString()}
+                  </div>
+                  <div className="payment-amount">
+                    ${pago.monto.toFixed(2)}
+                  </div>
+                  <div className="payment-user">
+                    Registrado por: {obtenerNombreUsuario(pago.usuario_id)}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
         {/* DOCUMENTO */}
         <section className="detail-section document-section">
           <h3>Documento de Propuesta</h3>
@@ -933,6 +1118,96 @@ export default function LicitacionDetailView({ licitacionId, onClose }) {
           )}
         </section>
       </div>
+
+      {/* MODAL DE PAGO */}
+      {showPaymentModal && (
+        <div
+          className="modal-overlay"
+          onClick={() => setShowPaymentModal(false)}
+        >
+          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+            <div className="modal-header">
+              <h4>Registrar Pago</h4>
+              <button
+                onClick={() => setShowPaymentModal(false)}
+                className="modal-close"
+              >
+                ✕
+              </button>
+            </div>
+
+            <div className="modal-body">
+              <div className="payment-info">
+                <div className="info-row">
+                  <span>Total Facturado:</span>
+                  <strong>${totalProductos.toFixed(2)}</strong>
+                </div>
+                <div className="info-row">
+                  <span>Total Pagado:</span>
+                  <strong>${totalPagado.toFixed(2)}</strong>
+                </div>
+                <div className="info-row highlight">
+                  <span>Saldo Pendiente:</span>
+                  <strong>${saldoPendiente.toFixed(2)}</strong>
+                </div>
+              </div>
+
+              <div className="form-group">
+                <label>Monto a Pagar</label>
+                <div className="payment-input-group">
+                  <span className="currency">$</span>
+                  <input
+                    type="number"
+                    step="0.01"
+                    min="0.01"
+                    max={saldoPendiente}
+                    value={paymentAmount}
+                    onChange={(e) => setPaymentAmount(e.target.value)}
+                    placeholder="0.00"
+                    disabled={isSaving}
+                  />
+                </div>
+                {paymentAmount && (
+                  <div
+                    className={`payment-validation ${
+                      parseFloat(paymentAmount) > saldoPendiente
+                        ? "error"
+                        : "success"
+                    }`}
+                  >
+                    {parseFloat(paymentAmount) > saldoPendiente
+                      ? `El monto no puede exceder $${saldoPendiente.toFixed(2)}`
+                      : `Saldo después del pago: $${(
+                          saldoPendiente - parseFloat(paymentAmount)
+                        ).toFixed(2)}`}
+                  </div>
+                )}
+              </div>
+            </div>
+
+            <div className="modal-footer">
+              <button
+                onClick={() => setShowPaymentModal(false)}
+                className="btn-secondary"
+              >
+                Cancelar
+              </button>
+              <button
+                onClick={handleRegistrarPago}
+                className="btn-primary"
+                disabled={
+                  !paymentAmount ||
+                  parseFloat(paymentAmount) <= 0 ||
+                  parseFloat(paymentAmount) > saldoPendiente ||
+                  isSaving
+                }
+              >
+                {isSaving ? "Registrando..." : "Registrar Pago"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Confirmation Modal */}
       {confirmModal && (

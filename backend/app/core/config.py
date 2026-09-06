@@ -20,6 +20,9 @@ class Settings(BaseSettings):
     mailgun_api_key: Optional[str] = None
     mailgun_domain: Optional[str] = None
     mailgun_from_email: Optional[str] = None
+
+    rabbitmq_url: str = "amqp://guest:guest@localhost:5672//"
+    redis_url: str = "redis://localhost:6379/0"
     
     # database_url: str = ""
 
