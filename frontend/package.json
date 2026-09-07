@@ -17,6 +17,7 @@
     "react-datepicker": "^9.1.0",
     "react-dom": "^19.2.8",
     "react-router-dom": "^7.18.3",
+    "terser": "^5.51.2",
     "zustand": "^5.0.15"
   },
   "devDependencies": {
