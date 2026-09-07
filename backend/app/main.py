@@ -11,7 +11,7 @@ app = FastAPI(title="Sistema de Gestión de Licitaciones", version="1.0.0", debu
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:5173", "http://localhost:3000", "https://*.vercel.app"],
+    allow_origins=["http://localhost:5173", "http://localhost:3000",    "https://sistemas-licitaciones.vercel.app", "https://*.vercel.app"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
