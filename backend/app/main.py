@@ -9,16 +9,9 @@ logger = logging.getLogger(__name__)
 
 app = FastAPI(title="Sistema de Gestión de Licitaciones", version="1.0.0", debug=settings.debug)
 
-origins = [
-    "http://localhost:5173",
-    "http://localhost:3000",
-    "https://sistemas-licitaciones.vercel.app",
-    "https://*.vercel.app",
-]
-
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:5173", "http://localhost:3000",    "https://sistemas-licitaciones.vercel.app", "https://*.vercel.app"],
+    allow_origins=["http://localhost:5173", "http://localhost:3000", "https://sistemas-licitaciones.vercel.app"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
