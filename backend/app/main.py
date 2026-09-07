@@ -29,3 +29,15 @@ async def health():
         "environment": settings.environment,
         "debug": settings.debug
     }
+
+
+@app.get("/debug-info")
+async def debug_info():
+    return {
+        "app": "licitaciones-backend",
+        "cors": True,
+        "routes": [
+            str(route.path)
+            for route in app.routes
+        ],
+    }
