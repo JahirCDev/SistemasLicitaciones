@@ -1,6 +1,5 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import JSONResponse
 from app.core.config import get_settings
 from app.api.endpoints import cliente_endpoints, producto_endpoints, licitacion_endpoints, usuario_endpoints
 import logging
@@ -12,8 +11,8 @@ app = FastAPI(title="Sistema de Gestión de Licitaciones", version="1.0.0", debu
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
-    allow_credentials=False,
+    allow_origins=["https://sistemas-licitaciones.vercel.app"],
+    allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
@@ -23,17 +22,6 @@ app.include_router(producto_endpoints.router, prefix="/api")
 app.include_router(licitacion_endpoints.router, prefix="/api")
 app.include_router(usuario_endpoints.router, prefix="/api")
 
-@app.options("/{path:path}")
-async def preflight(path: str):
-    return JSONResponse(
-        {"status": "ok"},
-        headers={
-            "Access-Control-Allow-Origin": "*",  # ← TEMPORAL
-            "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
-            "Access-Control-Allow-Headers": "*",
-        }
-    )
-
 @app.get("/health")
 async def health():
     return {
@@ -41,7 +29,6 @@ async def health():
         "environment": settings.environment,
         "debug": settings.debug
     }
-
 
 @app.get("/debug-info")
 async def debug_info():
