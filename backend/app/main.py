@@ -11,7 +11,7 @@ app = FastAPI(title="Sistema de Gestión de Licitaciones", version="1.0.0", debu
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["https://sistemas-licitaciones.vercel.app"],
+    allow_origins=["https://sistemas-licitaciones.vercel.app", "http://localhost:5173", "http://localhost:3000"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -25,28 +25,18 @@ app.include_router(usuario_endpoints.router, prefix="/api")
 @app.get("/health")
 async def health():
     return {
-        "status": "DEPLOY_TESTING_122121",
-        "cors_test": True
+        "status": "ok",
+        "environment": settings.environment,
+        "debug": settings.debug
     }
 
 @app.get("/debug-info")
 async def debug_info():
     return {
         "app": "licitaciones-backend",
-        "environment": settings.environment,
-        "debug": settings.debug,
-        "cors_origins": [
-            "https://sistemas-licitaciones.vercel.app"
-        ],
+        "cors": True,
         "routes": [
             str(route.path)
             for route in app.routes
         ],
-    }
-
-@app.get("/__DEPLOY_TEST_122121__")
-async def deploy_test():
-    return {
-        "message": "ESTE ES EL MAIN.PY CORRECTO",
-        "version": "122121"
     }

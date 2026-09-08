@@ -3,7 +3,6 @@ from fastapi import APIRouter, Depends
 from app.schemas.usuario_schema import (
     UsuarioCreate,
     UsuarioResponse,
-    TokenResponse,
 )
 
 from app.services.usuario_services import (
