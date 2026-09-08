@@ -25,9 +25,8 @@ app.include_router(usuario_endpoints.router, prefix="/api")
 @app.get("/health")
 async def health():
     return {
-        "status": "ok",
-        "environment": settings.environment,
-        "debug": settings.debug
+        "status": "DEPLOY_TESTING_122121",
+        "cors_test": True
     }
 
 @app.get("/debug-info")
