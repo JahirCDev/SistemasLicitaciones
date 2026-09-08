@@ -43,3 +43,10 @@ async def debug_info():
             for route in app.routes
         ],
     }
+
+@app.get("/__DEPLOY_TEST_122121__")
+async def deploy_test():
+    return {
+        "message": "ESTE ES EL MAIN.PY CORRECTO",
+        "version": "122121"
+    }
