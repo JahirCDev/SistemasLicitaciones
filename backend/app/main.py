@@ -34,7 +34,11 @@ async def health():
 async def debug_info():
     return {
         "app": "licitaciones-backend",
-        "cors": True,
+        "environment": settings.environment,
+        "debug": settings.debug,
+        "cors_origins": [
+            "https://sistemas-licitaciones.vercel.app"
+        ],
         "routes": [
             str(route.path)
             for route in app.routes
