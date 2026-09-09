@@ -12,7 +12,7 @@ from app.core.security import verify_token
 from app.core.config import get_settings
 from app.tasks.licitacion_tasks import (
     marcar_licitaciones_vencidas,
-    procesar_recordatorios_vencimiento,
+    enviar_recordatorios_vencimiento,
 )
 
 router = APIRouter(prefix="/licitaciones", tags=["licitaciones"])
@@ -208,7 +208,7 @@ def procesar_tareas_licitaciones(
         )
 
     vencimientos = marcar_licitaciones_vencidas()
-    recordatorios = procesar_recordatorios_vencimiento()
+    recordatorios = enviar_recordatorios_vencimiento()
 
     return {
         "message": "Tareas procesadas correctamente",
