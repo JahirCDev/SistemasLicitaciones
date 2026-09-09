@@ -21,11 +21,8 @@ class Settings(BaseSettings):
     mailgun_domain: Optional[str] = None
     mailgun_from_email: Optional[str] = None
 
-    rabbitmq_url: str = "amqp://guest:guest@localhost:5672//"
-    redis_url: str = "redis://localhost:6379/0"
+    cron_secret: str
     
-    # database_url: str = ""
-
     environment: Literal["development", "staging", "production"] = "development"
     debug: bool = False
 
