@@ -11,7 +11,7 @@ from app.services.licitacion_services import LicitacionService
 from app.core.security import verify_token
 from app.core.config import get_settings
 from app.tasks.licitacion_tasks import (
-    procesar_licitaciones_vencidas,
+    marcar_licitaciones_vencidas,
     procesar_recordatorios_vencimiento,
 )
 
@@ -207,7 +207,7 @@ def procesar_tareas_licitaciones(
             detail="No autorizado",
         )
 
-    vencimientos = procesar_licitaciones_vencidas()
+    vencimientos = marcar_licitaciones_vencidas()
     recordatorios = procesar_recordatorios_vencimiento()
 
     return {
