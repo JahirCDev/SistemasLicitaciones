@@ -1,4 +1,4 @@
-from passlib.context import CryptContext
+from argon2 import PasswordHasher
 from datetime import datetime, timedelta
 from jose import JWTError, jwt
 from fastapi import HTTPException, Header
@@ -6,16 +6,17 @@ from typing import Optional
 import logging
 from app.core.config import get_settings
 
-logger = logging
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
-pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+ph = PasswordHasher()
 
 def hash_password(password: str) -> str:
-    return pwd_context.hash(password)
+    return ph.hash(password)
 
 def verify_password(plain_password: str, hashed_password: str) -> bool:
     try:
-        pwd_context.verify(hashed_password, plain_password)
+        ph.verify(hashed_password, plain_password)
         return True
     except Exception:
         return False
