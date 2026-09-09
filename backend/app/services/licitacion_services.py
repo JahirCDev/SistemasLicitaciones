@@ -4,20 +4,38 @@ from app.schemas.licitacion_schema import LicitacionCreate, LicitacionUpdate
 from app.core.time import now_local_iso
 from app.utils.audit_utils import registrar_cambio
 from app.services.mailgun_service import enviar_resumen_licitacion
+from datetime import datetime
+from zoneinfo import ZoneInfo
+
+
+PANAMA_TZ = ZoneInfo("America/Panama")
+UTC_TZ = ZoneInfo("UTC")
+
+def convertir_fecha_a_utc(fecha: datetime) -> datetime:
+    """
+    Interpreta una fecha sin zona horaria como hora de Panamá
+    y la convierte a UTC.
+    """
+    if fecha.tzinfo is None:
+        fecha = fecha.replace(tzinfo=PANAMA_TZ)
+
+    return fecha.astimezone(UTC_TZ)
 
 class LicitacionService:
     @staticmethod
     def crear_licitacion(licitacion: LicitacionCreate, user_id: int):
         db = get_db()
+
         try:
+            fecha_limite_utc = convertir_fecha_a_utc(licitacion.fecha_limite)
             response = db.table("licitaciones").insert({
                 "cliente_id": licitacion.cliente_id,
                 "usuario_id": user_id,
                 "presupuesto_maximo": licitacion.presupuesto_maximo,
-                "fecha_limite": licitacion.fecha_limite.isoformat(),
+                "fecha_limite": fecha_limite_utc.isoformat(),
                 "estado": "borrador",
                 "created_by": user_id,
-                "updated_by": user_id
+                "updated_by": user_id,
             }).execute()
             return response.data[0]
         except Exception as e:
@@ -100,11 +118,12 @@ class LicitacionService:
                 if nuevo_valor is None:
                     continue
 
-                valor_nuevo_db = (
-                    nuevo_valor.isoformat()
-                    if campo == "fecha_limite"
-                    else nuevo_valor
-                )
+                if campo == "fecha_limite":
+                    nuevo_valor = convertir_fecha_a_utc(nuevo_valor)
+                    valor_nuevo_db = nuevo_valor.isoformat()
+                else:
+                    valor_nuevo_db = nuevo_valor
+
                 if valor_nuevo_db != valor_actual:
                     registrar_cambio(
                         "licitaciones",

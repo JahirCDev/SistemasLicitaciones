@@ -59,9 +59,24 @@ export default function LicitacionDetailView({ licitacionId, onClose }) {
 
   const formatearFechaParaInput = (fecha) => {
     if (!fecha) return "";
+
     const date = new Date(fecha);
-    const offset = date.getTimezoneOffset() * 60000;
-    return new Date(date.getTime() - offset).toISOString().slice(0, 16);
+
+    if (Number.isNaN(date.getTime())) {
+      return "";
+    }
+
+    return date
+      .toLocaleString("sv-SE", {
+        timeZone: "America/Panama",
+        year: "numeric",
+        month: "2-digit",
+        day: "2-digit",
+        hour: "2-digit",
+        minute: "2-digit",
+        hour12: false,
+      })
+      .replace(" ", "T");
   };
 
   const obtenerNombreDocumento = (url) => {
@@ -691,7 +706,7 @@ export default function LicitacionDetailView({ licitacionId, onClose }) {
                   }
                   title={isEditable ? "Doble click para editar" : ""}
                 >
-                  {new Date(licitacion.fecha_limite).toLocaleDateString()}
+                  {formatLocalDateTime(licitacion.fecha_limite)}
                 </span>
               )}
             </div>
@@ -949,21 +964,18 @@ export default function LicitacionDetailView({ licitacionId, onClose }) {
                 </span>
               </div>
             </div>
-
           </section>
         )}
         {pagos.length > 0 && (
           <div className="payments-history">
-              <h4>Historial de Pagos</h4>
+            <h4>Historial de Pagos</h4>
             <div className="payments-list">
               {pagos.map((pago, idx) => (
                 <div key={idx} className="payment-record">
                   <div className="payment-date">
-                    {new Date(pago.created_at).toLocaleDateString()}
+                    {formatLocalDateTime(pago.created_at)}
                   </div>
-                  <div className="payment-amount">
-                    ${pago.monto.toFixed(2)}
-                  </div>
+                  <div className="payment-amount">${pago.monto.toFixed(2)}</div>
                   <div className="payment-user">
                     Registrado por: {obtenerNombreUsuario(pago.usuario_id)}
                   </div>

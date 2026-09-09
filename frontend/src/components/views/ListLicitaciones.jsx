@@ -7,7 +7,7 @@ import LoadingSpinner from "../common/LoadingSpinner";
 import PaymentModal from "../common/PaymentModal";
 import ConfirmationModal from "../common/ConfirmationModal";
 import "../../styles/views/ListLicitaciones.css";
-import { formatLocalDate } from "../../utils/dateUtils";
+import { formatLocalDateTime } from "../../utils/dateUtils";
 import { licitacionesService } from "../../services/licitacionesService";
 
 export default function ListarLicitaciones({ refreshTrigger, onNewBidding }) {
@@ -201,8 +201,8 @@ export default function ListarLicitaciones({ refreshTrigger, onNewBidding }) {
                     </span>
                   </td>
                   <td>${lic.presupuesto_maximo.toFixed(2)}</td>
-                  <td>{new Date(lic.fecha_limite).toLocaleDateString()}</td>
-                  <td>{formatLocalDate(lic.created_at)}</td>
+                  <td>{formatLocalDateTime(lic.fecha_limite)}</td>
+                  <td>{formatLocalDateTime(lic.created_at)}</td>
                   <td className="actions-cell">
                     {lic.estado === "borrador" && (
                       <button
@@ -284,8 +284,7 @@ export default function ListarLicitaciones({ refreshTrigger, onNewBidding }) {
                           onClick={() =>
                             setConfirmModal({
                               title: "Marcar por cobrar",
-                              message:
-                                "¿Deseas facturar esta licitación como?",
+                              message: "¿Deseas facturar esta licitación como?",
                               licitacionId: lic.id,
                               accion: "marcarPorCobrar",
                               onConfirm: () => {

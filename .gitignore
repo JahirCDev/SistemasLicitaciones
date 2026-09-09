@@ -73,6 +73,7 @@ env/
 .env
 .env.local
 .env.*.local
+.env.production
 
 # Logs
 *.log
@@ -85,3 +86,7 @@ yarn-error.log*
 .pytest_cache/
 .coverage
 htmlcov/
+
+# Celery
+celerybeat-schedule
+celerybeat-schedule.*

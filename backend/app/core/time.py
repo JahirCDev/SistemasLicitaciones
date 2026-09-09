@@ -1,7 +1,9 @@
-from datetime import datetime, timedelta, timezone
+from datetime import datetime
+from zoneinfo import ZoneInfo
 
-LOCAL_TIMEZONE = timezone(timedelta(hours=-5), name="GMT-5")
+PANAMA_TZ = ZoneInfo("America/Panama")
+UTC_TZ = ZoneInfo("UTC")
 
 
 def now_local_iso() -> str:
-    return datetime.now(LOCAL_TIMEZONE).isoformat()
+    return datetime.now(PANAMA_TZ).isoformat()
