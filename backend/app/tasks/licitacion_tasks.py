@@ -90,6 +90,7 @@ def enviar_recordatorios_vencimiento():
             fecha_limite,
             estado,
             recordatorio_vencimiento_enviado,
+            presupuesto_maximo,
             clientes (
                 id,
                 nombre,
