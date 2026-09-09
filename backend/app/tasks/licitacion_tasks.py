@@ -140,7 +140,7 @@ def enviar_recordatorios_vencimiento():
             ).strip()
 
             enviar_recordatorio_vencimiento(
-                cliente_correo=correo,
+                cliente_email=correo,
                 cliente_nombre=nombre_cliente,
                 licitacion=licitacion,
             )
