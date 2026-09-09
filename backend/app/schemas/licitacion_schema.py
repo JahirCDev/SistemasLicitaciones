@@ -22,7 +22,7 @@ class LicitacionResponse(BaseModel):
     documento_url: Optional[str]
     created_at: datetime
     created_by: Optional[int] = None
-    updated_at: Optional[datetime] = None
+    updated_at: datetime
     updated_by: Optional[int] = None
 
 class AgregarProductoRequest(BaseModel):
