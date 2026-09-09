@@ -1,7 +1,6 @@
 import re
 import unicodedata
-
-from fastapi import APIRouter, Depends, HTTPException, Query, UploadFile
+from fastapi import APIRouter, Depends, HTTPException, Query, UploadFile, Header
 from app.schemas.licitacion_schema import (
     ActualizarCantidadProductoRequest,
     LicitacionCreate,
@@ -10,6 +9,11 @@ from app.schemas.licitacion_schema import (
 )
 from app.services.licitacion_services import LicitacionService
 from app.core.security import verify_token
+from app.core.config import get_settings
+from app.tasks.licitacion_tasks import (
+    procesar_licitaciones_vencidas,
+    procesar_recordatorios_vencimiento,
+)
 
 router = APIRouter(prefix="/licitaciones", tags=["licitaciones"])
 
@@ -190,3 +194,24 @@ async def registrar_pago(
     user_id: int = Depends(verify_token)
 ):
     return LicitacionService.registrar_pago(licitacion_id, monto, user_id)
+
+@router.post("/tareas/procesar-licitaciones")
+def procesar_tareas_licitaciones(
+    x_cron_secret: str = Header(...)
+):
+    settings = get_settings()
+
+    if x_cron_secret != settings.cron_secret:
+        raise HTTPException(
+            status_code=403,
+            detail="No autorizado",
+        )
+
+    vencimientos = procesar_licitaciones_vencidas()
+    recordatorios = procesar_recordatorios_vencimiento()
+
+    return {
+        "message": "Tareas procesadas correctamente",
+        "vencimientos": vencimientos,
+        "recordatorios": recordatorios,
+    }
