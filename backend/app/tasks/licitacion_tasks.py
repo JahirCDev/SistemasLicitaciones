@@ -129,9 +129,9 @@ def enviar_recordatorios_vencimiento():
                 continue
 
             cliente = licitacion.get("clientes") or {}
-            email = cliente.get("email")
+            correo = cliente.get("email")
 
-            if not email:
+            if not correo:
                 continue
 
             nombre_cliente = (
@@ -140,7 +140,7 @@ def enviar_recordatorios_vencimiento():
             ).strip()
 
             enviar_recordatorio_vencimiento(
-                cliente_email=email,
+                cliente_correo=correo,
                 cliente_nombre=nombre_cliente,
                 licitacion=licitacion,
             )
@@ -155,8 +155,13 @@ def enviar_recordatorios_vencimiento():
 
             enviados += 1
 
-        except Exception:
+        except Exception as e:
             errores += 1
+            logger.exception(
+                "Error enviando recordatorio para licitación %s: %s",
+                licitacion.get("id"),
+                e,
+            )
 
     return {
         "message": "Recordatorios procesados",
