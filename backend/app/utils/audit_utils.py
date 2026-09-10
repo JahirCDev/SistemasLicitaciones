@@ -14,12 +14,27 @@ def registrar_cambio(
         return  # No registrar si no cambió
     
     db = get_db()
+
+    if tabla == "usuarios":
+        try:
+            db.table("historial_usuarios").insert({
+                "usuario_id": registro_id,
+                "modificado_por": usuario_id,
+                "campo_modificado": campo,
+                "valor_anterior": str(valor_anterior) if valor_anterior is not None else None,
+                "valor_nuevo": str(valor_nuevo),
+                "created_at": now_local_iso()
+            }).execute()
+        except Exception as e:
+            print(f"Error registrando cambio en historial_usuarios: {e}")
+
+        return
     
-    # Mapear tabla a su tabla de historial
     tablas_historial = {
         "clientes": "historial_clientes",
         "productos": "historial_productos",
-        "licitaciones": "historial_licitaciones"
+        "licitaciones": "historial_licitaciones",
+        "usuarios": "historial_usuarios",
     }
     
     tabla_historial = tablas_historial.get(tabla)
@@ -27,11 +42,11 @@ def registrar_cambio(
         print(f"Tabla desconocida para auditoría: {tabla}")
         return
     
-    # Determinar la columna de FK según la tabla
     fk_column = {
         "clientes": "cliente_id",
         "productos": "producto_id",
-        "licitaciones": "licitacion_id"
+        "licitaciones": "licitacion_id",
+        "usuarios": "usuario_id",
     }.get(tabla)
     
     try:
@@ -50,22 +65,22 @@ def obtener_historial(tabla: str, registro_id: int):
     """Obtiene el historial de cambios de un registro"""
     db = get_db()
     
-    # Mapear tabla a su tabla de historial
     tablas_historial = {
         "clientes": "historial_clientes",
         "productos": "historial_productos",
-        "licitaciones": "historial_licitaciones"
+        "licitaciones": "historial_licitaciones",
+        "usuarios": "historial_usuarios",
     }
     
     tabla_historial = tablas_historial.get(tabla)
     if not tabla_historial:
         return []
     
-    # Determinar la columna de FK según la tabla
     fk_column = {
         "clientes": "cliente_id",
         "productos": "producto_id",
-        "licitaciones": "licitacion_id"
+        "licitaciones": "licitacion_id",
+        "usuarios": "usuario_id"
     }.get(tabla)
     
     try:

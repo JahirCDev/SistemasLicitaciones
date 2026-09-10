@@ -118,3 +118,16 @@
     font-size: 10px;
   }
 }
+
+.action-btn-products {
+  width: 30%;
+  padding: 8px;
+  background: var(--csc-blue-dark);
+  color: white;
+  border: none;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}

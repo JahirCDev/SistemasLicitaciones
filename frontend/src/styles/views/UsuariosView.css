@@ -1,13 +1,11 @@
 .table-wrapper {
   overflow-x: auto;
-  border-radius: 8px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  flex: 1;
 }
 
 .data-table {
   width: 100%;
   border-collapse: collapse;
-  background: white;
   font-size: 14px;
 }
 
@@ -155,4 +153,8 @@
   .action-btn {
     width: 100%;
   }
+}
+
+.data-table .actions-cell {
+  border-bottom: none;
 }

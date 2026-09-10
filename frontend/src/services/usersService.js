@@ -16,8 +16,11 @@ export const usersService = {
   },
   crear: (data) => apiClient.post("/usuarios", data),
   listar: () => apiClient.get("/usuarios"),
-  login: (email, password) => apiClient.post("/usuarios/login", null, { params: { email, password } }),
+  obtener: (id) => apiClient.get(`/usuarios/${id}`),
+  login: (email, password) =>
+    apiClient.post("/usuarios/login", null, { params: { email, password } }),
   obtenerPerfil: () => apiClient.get("/usuarios/me"),
-  obtenerHistorial: (usuarioId) => apiClient.get(`/usuarios/${usuarioId}/historial`),
+  obtenerHistorial: (usuarioId) =>
+    apiClient.get(`/usuarios/${usuarioId}/historial`),
   actualizar: (id, data) => apiClient.put(`/usuarios/${id}`, data),
 };

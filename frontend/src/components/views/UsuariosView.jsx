@@ -58,7 +58,7 @@ export default function UsuariosView({ refreshTrigger }) {
                 <th>Nombre</th>
                 <th>Email</th>
                 <th>Rol</th>
-                <th>Creado</th>
+                <th>Última Modificación</th>
                 <th>Acciones</th>
               </tr>
             </thead>
@@ -74,7 +74,7 @@ export default function UsuariosView({ refreshTrigger }) {
                       {user.rol}
                     </span>
                   </td>
-                  <td>{formatLocalDate(user.created_at)}</td>
+                  <td>{formatLocalDate(user.updated_at)}</td>
                   <td className="actions-cell">
                     <button
                       className="action-btn action-btn-primary"

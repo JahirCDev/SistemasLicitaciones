@@ -20,7 +20,6 @@ function App() {
   const logout = useAuthStore((state) => state.logout);
   const usuario = useAuthStore((state) => state.usuario);
   const [searchParams, setSearchParams] = useSearchParams();
-  console.log("Usuario en App:", usuario); // ← AGREGA ESTO 
   const [activeTab, setActiveTab] = useState(() => {
   const tabParam = searchParams.get("tab");
   if (tabParam) return tabParam;

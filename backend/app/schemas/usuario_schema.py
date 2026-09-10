@@ -8,12 +8,20 @@ class UsuarioCreate(BaseModel):
     nombre: str
     apellido: Optional[str] = None
 
+class UsuarioUpdate(BaseModel):
+    email: Optional[EmailStr] = None
+    nombre: Optional[str] = None
+    apellido: Optional[str] = None
+    rol: Optional[str] = None
+
 class UsuarioResponse(BaseModel):
     id: int
     email: str
     nombre: Optional[str] = None
     apellido: Optional[str] = None
     rol: str
+    created_at: Optional[datetime] = None
+    updated_at: Optional[datetime] = None
 
 class TokenResponse(BaseModel):
     access_token: str

@@ -15,7 +15,7 @@ export default function UsuarioDetailView({ usuarioId, onClose }) {
   const [editingField, setEditingField] = useState(null);
   const [editValues, setEditValues] = useState({});
   const [confirmModal, setConfirmModal] = useState(null);
-  const [setIsSaving] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
 
   useEffect(() => {
     const cargarDatos = async () => {
@@ -28,6 +28,8 @@ export default function UsuarioDetailView({ usuarioId, onClose }) {
 
         setUsuario(resUsuario.data);
         setHistorial(resHistorial.data || []);
+        console.log("HISTORIAL USUARIO:", resHistorial.data);
+
       } catch (err) {
         console.error("Error cargando usuario:", err);
         setError(err.response?.data?.detail || "Error cargando datos");
@@ -111,7 +113,7 @@ export default function UsuarioDetailView({ usuarioId, onClose }) {
     <div className="detail-view">
       <div className="detail-header">
         <button onClick={onClose} className="btn-back">
-          ← Volver
+          Volver
         </button>
         <h2>Detalle del Usuario #{usuario.id}</h2>
       </div>
@@ -302,7 +304,7 @@ export default function UsuarioDetailView({ usuarioId, onClose }) {
           message={confirmModal.message}
           onConfirm={confirmModal.onConfirm}
           onCancel={confirmModal.onCancel}
-          confirmText="Confirmar"
+          confirmText={isSaving ? "Cambiando..." : "Cambiar"}
           cancelText="Cancelar"
         />
       )}

@@ -62,7 +62,7 @@ export default function ProductosView() {
                   </td>
                   <td>
                     <button
-                      className="action-btn"
+                      className="action-btn-products"
                       onClick={() => navigate(`/productos/${producto.id}`)}
                     >
                       Editar
