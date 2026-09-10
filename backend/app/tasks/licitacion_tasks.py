@@ -99,7 +99,7 @@ def enviar_recordatorios_vencimiento():
                 apellido,
                 email
             ),
-            licitacion_productos (
+            licitaciones_productos (
                 cantidad,
                 precio,
                 productos (
@@ -199,7 +199,7 @@ def enviar_recordatorios_vencimiento():
             # Convertir los productos relacionados al formato esperado
             productos = []
 
-            for item in licitacion.get("licitacion_productos", []):
+            for item in licitacion.get("licitaciones_productos", []):
                 producto_info = item.get("productos") or {}
 
                 productos.append({
