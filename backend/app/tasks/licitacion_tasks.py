@@ -3,6 +3,7 @@ from app.models.db import get_db
 from app.utils.audit_utils import registrar_cambio
 from app.services.mailgun_service import enviar_recordatorio_vencimiento
 import logging
+import httpx
 
 logger = logging.getLogger(__name__)
 
@@ -91,11 +92,19 @@ def enviar_recordatorios_vencimiento():
             estado,
             recordatorio_vencimiento_enviado,
             presupuesto_maximo,
+            documento_url,
             clientes (
                 id,
                 nombre,
                 apellido,
                 email
+            ),
+            licitacion_productos (
+                cantidad,
+                precio,
+                productos (
+                    nombre
+                )
             )
         """)
         .eq("estado", "activa")
@@ -117,14 +126,22 @@ def enviar_recordatorios_vencimiento():
                 continue
 
             if isinstance(fecha_limite, str):
-                fecha_limite = datetime.fromisoformat(fecha_limite.replace("Z", "+00:00"))
+                fecha_limite = datetime.fromisoformat(
+                    fecha_limite.replace("Z", "+00:00")
+                )
 
             if fecha_limite.tzinfo is None:
-                fecha_limite = fecha_limite.replace(tzinfo=timezone.utc)
+                fecha_limite = fecha_limite.replace(
+                    tzinfo=timezone.utc
+                )
             else:
-                fecha_limite = fecha_limite.astimezone(timezone.utc)
+                fecha_limite = fecha_limite.astimezone(
+                    timezone.utc
+                )
 
-            horas_restantes = (fecha_limite - ahora).total_seconds() / 3600
+            horas_restantes = (
+                fecha_limite - ahora
+            ).total_seconds() / 3600
 
             if not (0 < horas_restantes < 48):
                 continue
@@ -133,6 +150,10 @@ def enviar_recordatorios_vencimiento():
             correo = cliente.get("email")
 
             if not correo:
+                logger.warning(
+                    "La licitación %s no tiene correo de cliente",
+                    licitacion["id"],
+                )
                 continue
 
             nombre_cliente = (
@@ -140,24 +161,81 @@ def enviar_recordatorios_vencimiento():
                 f"{cliente.get('apellido', '')}"
             ).strip()
 
+            # Obtener el documento de propuesta
+            documento_url = licitacion.get("documento_url")
+
+            if not documento_url:
+                logger.warning(
+                    "La licitación %s no tiene documento de propuesta",
+                    licitacion["id"],
+                )
+                continue
+
+            archivo_response = httpx.get(
+                documento_url,
+                timeout=30.0,
+                follow_redirects=True,
+            ) 
+            archivo_response.raise_for_status()
+
+            archivo = archivo_response.content
+
+            nombre_archivo = (
+                documento_url.split("/")[-1]
+                .split("?")[0]
+            )
+
+            if not nombre_archivo:
+                nombre_archivo = (
+                    f"propuesta_licitacion_"
+                    f"{licitacion['id']}.pdf"
+                )
+
+            tipo_contenido = archivo_response.headers.get(
+                "content-type",
+                "application/octet-stream",
+            )
+
+            # Convertir los productos relacionados al formato esperado
+            productos = []
+
+            for item in licitacion.get("licitacion_productos", []):
+                producto_info = item.get("productos") or {}
+
+                productos.append({
+                    "nombre": producto_info.get(
+                        "nombre",
+                        "Producto sin nombre",
+                    ),
+                    "cantidad": item.get("cantidad", 0),
+                    "precio": item.get("precio", 0),
+                })
+
             enviar_recordatorio_vencimiento(
                 cliente_email=correo,
                 cliente_nombre=nombre_cliente,
                 licitacion=licitacion,
+                productos=productos,
+                archivo=archivo,
+                nombre_archivo=nombre_archivo,
+                tipo_contenido=tipo_contenido,
             )
 
             db.table("licitaciones").update({
                 "recordatorio_vencimiento_enviado": True
             }).eq(
-                "id", licitacion["id"]
+                "id",
+                licitacion["id"],
             ).eq(
-                "estado", "activa"
+                "estado",
+                "activa",
             ).execute()
 
             enviados += 1
 
         except Exception as e:
             errores += 1
+
             logger.exception(
                 "Error enviando recordatorio para licitación %s: %s",
                 licitacion.get("id"),

@@ -8,7 +8,6 @@ from app.core.config import get_settings
 logger = logging.getLogger(__name__)
 PANAMA_TZ = ZoneInfo("America/Panama")
 
-
 def enviar_resumen_licitacion(
     cliente_email: str,
     cliente_nombre: str,
@@ -64,6 +63,7 @@ def enviar_resumen_licitacion(
       <li><strong>Fecha límite:</strong> {fecha_limite}</li>
       <li><strong>Total de productos:</strong> ${total_productos:.2f}</li>
     </ul>
+    <p><strong>Listado de Productos</strong></p>
     <table border="1" cellpadding="6" cellspacing="0">
       <thead><tr><th>Producto</th><th>Cantidad</th><th>Precio</th><th>Subtotal</th></tr></thead>
       <tbody>{filas_productos}</tbody>
@@ -78,7 +78,7 @@ def enviar_resumen_licitacion(
         url,
         auth=("api", settings.mailgun_api_key),
         data={
-            "from": settings.mailgun_from_email,
+            "from": f"Sistemas Licitaciones SA <{settings.mailgun_from_email}>",
             "to": cliente_email,
             "subject": asunto,
             "text": texto,
@@ -109,9 +109,14 @@ def enviar_recordatorio_vencimiento(
     cliente_email: str,
     cliente_nombre: str,
     licitacion: dict[str, Any],
+    productos: list[dict[str, Any]],
+    archivo: bytes,
+    nombre_archivo: str,
+    tipo_contenido: str,
 ) -> None:
+    
     settings = get_settings()
-
+    
     if not all(
         (
             settings.mailgun_api_key,
@@ -126,6 +131,17 @@ def enviar_recordatorio_vencimiento(
         return
 
     fecha_limite = licitacion["fecha_limite"]
+
+    filas_productos = "".join(
+        f"<tr><td>{producto['nombre']}</td>"
+        f"<td>{producto['cantidad']}</td>"
+        f"<td>${producto['precio']:.2f}</td>"
+        f"<td>${producto['cantidad'] * producto['precio']:.2f}</td></tr>"
+        for producto in productos
+    )
+    total_productos = sum(
+        producto["cantidad"] * producto["precio"] for producto in productos
+    )
 
     if isinstance(fecha_limite, str):
         fecha_limite = datetime.fromisoformat(
@@ -162,25 +178,31 @@ def enviar_recordatorio_vencimiento(
     </p>
 
     <ul>
-        <li>
-            <strong>Licitación:</strong> #{licitacion['id']}
+        <li><strong>Licitación:</strong> 
+            #{licitacion['id']}
         </li>
-        <li>
-            <strong>Presupuesto máximo:</strong>
+        <li><strong>Presupuesto máximo:</strong>
             ${licitacion['presupuesto_maximo']:.2f}
         </li>
-        <li>
-            <strong>Fecha límite:</strong>
+        <li><strong>Fecha límite:</strong>
             {fecha_limite}
         </li>
+        <li><strong>Total de productos:</strong> 
+            ${total_productos:.2f}
+        </li>
     </ul>
+     <p><strong>Listado de Productos</strong></p>
+    <table border="1" cellpadding="6" cellspacing="0">
+        <thead><tr><th>Producto</th><th>Cantidad</th><th>Precio</th><th>Subtotal</th></tr></thead>
+        <tbody>{filas_productos}</tbody>
+    </table>
 
     <p>
         <strong>Faltan menos de 48 horas para el vencimiento.</strong>
     </p>
 
     <p>
-        Les recomendamos ponerse en contacto antes de la fecha límite.
+        Les recomendamos ponerse en contacto antes de la fecha límite. Para más detalles puede consultar el documento de la propuesta que se encuentra adjunto al correo
     </p>
 
     <p>Saludos cordiales,</p>
@@ -195,11 +217,18 @@ def enviar_recordatorio_vencimiento(
         url,
         auth=("api", settings.mailgun_api_key),
         data={
-            "from": settings.mailgun_from_email,
+            "from": f"Sistemas Licitaciones SA <{settings.mailgun_from_email}>",
             "to": cliente_email,
             "subject": asunto,
             "text": texto,
             "html": html,
+        },
+        files={
+        "attachment": (
+            nombre_archivo,
+            archivo,
+            tipo_contenido or "application/octet-stream",
+            )
         },
         timeout=30.0,
     )
